@@ -8,37 +8,55 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Change the type from 'string' to 'any' or 'File' to handle the incoming object
-export async function uploadToCloudinary(file: any) {
+// Helper to create a delay between retries
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export async function uploadToCloudinary(file: File, maxRetries = 3) {
   try {
-    // 1. Convert the File object into a Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 2. Upload using the buffer via a promise wrapper
-    const result = (await new Promise((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            upload_preset: "my_preset", // Using the preset from your screenshot
-            folder: "pothole_reports",
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        )
-        .end(buffer);
-    })) as any;
+    let lastError;
 
-    // 3. Return the public_id so you can retrieve it later
-    return {
-      success: true,
-      imageId: result.public_id, // Store this in your DB
-      url: result.secure_url,
-    };
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const result = (await new Promise((resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              {
+                upload_preset: "my_preset",
+                folder: "pothole_reports",
+              },
+              (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+              }
+            )
+            .end(buffer);
+        })) as any;
+
+        // Success! Return the ID and URL
+        return {
+          success: true,
+          imageId: result.public_id,
+          url: result.secure_url,
+        };
+      } catch (error: any) {
+        lastError = error;
+        console.warn(`Upload attempt ${attempt} failed. Retrying...`);
+
+        // Wait 1 second before retrying (exponential backoff could go here)
+        if (attempt < maxRetries) await sleep(1000);
+      }
+    }
+
+    // If we reach here, all retries failed
+    throw lastError;
   } catch (error: any) {
-    console.error("Cloudinary error:", error);
-    return { success: false, error: error.message || "Upload failed" };
+    console.error("Cloudinary error after retries:", error);
+    return {
+      success: false,
+      error: error.message || "Upload failed after multiple attempts",
+    };
   }
 }

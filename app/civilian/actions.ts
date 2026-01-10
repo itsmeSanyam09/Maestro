@@ -22,10 +22,12 @@ export async function getUserPosts() {
       },
     });
     console.log("posts", posts);
-
+    if (posts === undefined) {
+      return { success: true, data: [] };
+    }
     return { success: true, data: posts };
   } catch (error) {
     console.error("Failed to fetch posts:", error);
-    return { success: false, error: "Could not retrieve posts." };
+    return { success: false, data: [] };
   }
 }

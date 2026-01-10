@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import ExifReader from "exifreader";
 import { uploadToCloudinary } from "./uploadCloudinary";
+import { createPotholeReport } from "./actions";
 
 function ReportPotholeUpload() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
@@ -133,7 +134,10 @@ function ReportPotholeUpload() {
       const uploadPromises = uploadedFiles.map((fileItem) =>
         uploadToCloudinary(fileItem.file)
       );
-      const imageUrls = await Promise.all(uploadPromises);
+      const uploadResults = await Promise.all(uploadPromises);
+      const imageUrls = uploadResults
+        .filter((result: any) => result.success)
+        .map((result: any) => result.url);
 
       // 3. Construct the final object for YOUR database
       const finalReport = {
@@ -143,9 +147,8 @@ function ReportPotholeUpload() {
         description: formData.description,
         severity: formData.severity,
         images: imageUrls, // Array of Cloudinary URLs
-        timestamp: new Date().toISOString(),
       };
-
+      const result = await createPotholeReport(finalReport);
       console.log("FINAL DATA FOR YOUR DB:", finalReport);
 
       // 4. Send finalReport to your backend (e.g., fetch('/api/potholes', ...))

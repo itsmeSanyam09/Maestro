@@ -2,135 +2,96 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getUserPosts } from "./actions";
+
+interface Complaint {
+  id: string;
+  images: string[];
+  address: string;
+  longitude: number | null;
+  latitude: number | null;
+  dimension: string[];
+  severity: string;
+  createdAt: Date;
+  userId: string;
+  description: string | null;
+}
 function CivilianDashboard() {
   // Mock complaint data
-  const [complaints] = useState([
-    {
-      id: 1,
-      image:
-        "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=400&h=300&fit=crop",
-      location: "MG Road, Connaught Place, New Delhi",
-      status: "Fixed",
-      date: "2024-12-15",
-      description: "Large pothole near traffic signal",
-    },
-    {
-      id: 2,
-      image:
-        "https://images.unsplash.com/photo-1621544402532-9f4e1f5d0ca5?w=400&h=300&fit=crop",
-      location: "Sector 18, Noida, Uttar Pradesh",
-      status: "In Progress",
-      date: "2024-12-20",
-      description: "Multiple small potholes on main road",
-    },
-    {
-      id: 3,
-      image:
-        "https://images.unsplash.com/photo-1611857308091-a5e3bc6c4137?w=400&h=300&fit=crop",
-      location: "Rajiv Chowk, Gurgaon, Haryana",
-      status: "Pending",
-      date: "2024-12-24",
-      description: "Deep pothole causing traffic issues",
-    },
-    {
-      id: 4,
-      image:
-        "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=400&h=300&fit=crop",
-      location: "Lajpat Nagar Market, South Delhi",
-      status: "Pending",
-      date: "2024-12-26",
-      description: "Road damage near market entrance",
-    },
-    {
-      id: 5,
-      image:
-        "https://images.unsplash.com/photo-1621544402532-9f4e1f5d0ca5?w=400&h=300&fit=crop",
-      location: "Nehru Place, New Delhi",
-      status: "Fixed",
-      date: "2024-12-10",
-      description: "Pothole repaired successfully",
-    },
-    {
-      id: 6,
-      image:
-        "https://images.unsplash.com/photo-1611857308091-a5e3bc6c4137?w=400&h=300&fit=crop",
-      location: "Dwarka Sector 21, New Delhi",
-      status: "In Progress",
-      date: "2024-12-22",
-      description: "Road surface damage after rain",
-    },
-  ]);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
 
   useEffect(() => {
     const fetchPosts = async () => {
-      console.log(await getUserPosts());
+      const result = await getUserPosts();
+      if (result.success) {
+        setComplaints(result.data);
+      }
     };
     fetchPosts();
   }, []);
 
-  const [filterStatus, setFilterStatus] = useState("All");
+  // const [filterStatus, setFilterStatus] = useState("All");
 
-  const getStatusColor = (status: any) => {
-    switch (status) {
-      case "Fixed":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "In Progress":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Pending":
-        return "bg-red-100 text-red-800 border-red-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
+  // const getStatusColor = (status: any) => {
+  //   switch (status) {
+  //     case "Fixed":
+  //       return "bg-green-100 text-green-800 border-green-200";
+  //     case "In Progress":
+  //       return "bg-yellow-100 text-yellow-800 border-yellow-200";
+  //     case "Pending":
+  //       return "bg-red-100 text-red-800 border-red-200";
+  //     default:
+  //       return "bg-gray-100 text-gray-800 border-gray-200";
+  //   }
+  // };
 
-  const getStatusIcon = (status: any) => {
-    switch (status) {
-      case "Fixed":
-        return (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      case "In Progress":
-        return (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      case "Pending":
-        return (
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      default:
-        return null;
-    }
-  };
+  // const getStatusIcon = (status: any) => {
+  //   switch (status) {
+  //     case "Fixed":
+  //       return (
+  //         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+  //           <path
+  //             fillRule="evenodd"
+  //             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+  //             clipRule="evenodd"
+  //           />
+  //         </svg>
+  //       );
+  //     case "In Progress":
+  //       return (
+  //         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+  //           <path
+  //             fillRule="evenodd"
+  //             d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+  //             clipRule="evenodd"
+  //           />
+  //         </svg>
+  //       );
+  //     case "Pending":
+  //       return (
+  //         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+  //           <path
+  //             fillRule="evenodd"
+  //             d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+  //             clipRule="evenodd"
+  //           />
+  //         </svg>
+  //       );
+  //     default:
+  //       return null;
+  //   }
+  // };
 
-  const filteredComplaints =
-    filterStatus === "All"
-      ? complaints
-      : complaints.filter((c) => c.status === filterStatus);
+  // const filteredComplaints =
+  //   filterStatus === "All"
+  //     ? complaints
+  //     : complaints.filter((c) => c.status === filterStatus);
 
-  const statusCounts = {
-    All: complaints.length,
-    Pending: complaints.filter((c) => c.status === "Pending").length,
-    "In Progress": complaints.filter((c) => c.status === "In Progress").length,
-    Fixed: complaints.filter((c) => c.status === "Fixed").length,
-  };
+  // const statusCounts = {
+  //   All: complaints.length,
+  //   Pending: complaints.filter((c) => c.status === "Pending").length,
+  //   "In Progress": complaints.filter((c) => c.status === "In Progress").length,
+  //   Fixed: complaints.filter((c) => c.status === "Fixed").length,
+  // };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -147,7 +108,7 @@ function CivilianDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
             <div className="text-3xl font-bold text-gray-800">
-              {statusCounts.All}
+              {complaints.length}
             </div>
             <div className="text-sm text-gray-600 mt-1">Total Reports</div>
           </div>
@@ -226,11 +187,11 @@ function CivilianDashboard() {
 
         {/* Complaints Grid */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          {/* <h2 className="text-2xl font-bold text-gray-800 mb-6">
             {filterStatus === "All" ? "All Reports" : `${filterStatus} Reports`}
-          </h2>
+          </h2> */}
 
-          {filteredComplaints.length === 0 ? (
+          {complaints.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
               <svg
                 className="w-16 h-16 text-gray-400 mx-auto mb-4"
@@ -251,7 +212,7 @@ function CivilianDashboard() {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredComplaints.map((complaint) => (
+              {complaints.map((complaint) => (
                 <div
                   key={complaint.id}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow"
@@ -259,11 +220,11 @@ function CivilianDashboard() {
                   {/* Image */}
                   <div className="relative h-48 bg-gray-200">
                     <img
-                      src={complaint.image}
+                      src={complaint.images[0]}
                       alt="Pothole"
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute top-3 right-3">
+                    {/* <div className="absolute top-3 right-3">
                       <span
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
                           complaint.status
@@ -272,7 +233,7 @@ function CivilianDashboard() {
                         {getStatusIcon(complaint.status)}
                         {complaint.status}
                       </span>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Content */}
@@ -308,7 +269,7 @@ function CivilianDashboard() {
                           />
                         </svg>
                         <span className="text-sm text-gray-700">
-                          {complaint.location}
+                          {complaint.address}
                         </span>
                       </div>
 
@@ -327,7 +288,7 @@ function CivilianDashboard() {
                           />
                         </svg>
                         <span className="text-sm text-gray-700">
-                          {new Date(complaint.date).toLocaleDateString(
+                          {new Date(complaint.createdAt).toLocaleDateString(
                             "en-IN",
                             {
                               year: "numeric",
@@ -340,8 +301,7 @@ function CivilianDashboard() {
                     </div>
 
                     <Link
-                      /*@ts-ignore */
-                      href={`/complaints/${complaints.id}`}
+                      href={`/complaints/${complaint.id}`}
                       className="w-full bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm"
                     >
                       View Details

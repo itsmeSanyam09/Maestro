@@ -1,13 +1,22 @@
 "use server";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "../lib/lib"; // Adjust this path to your client location
+import { prisma } from "../lib/lib";
 import { revalidatePath } from "next/cache";
 
-export async function createPotholeReport(formData: {
-  problem: string;
-  address: string;
-  images: string[];
-}) {
+// Helper for delay between retries
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export async function createPotholeReport(
+  formData: {
+    address: string;
+    lat: number | null;
+    lng: number | null;
+    description: string;
+    severity: string;
+    images: string[];
+  },
+  maxRetries = 3
+) {
   try {
     const { userId: clerkId } = await auth();
 
@@ -18,27 +27,42 @@ export async function createPotholeReport(formData: {
       };
     }
 
-    // Create the post in Prisma
-    const newPost = await prisma.post.create({
-      data: {
-        problem: formData.problem,
-        address: formData.address,
-        images: formData.images, // Array of strings (URLs)
-        userId: clerkId, // Links to clerkUserId in your schema
-        longitude: 0, // You can add geolocation logic later
-        latitude: 0,
-      },
-    });
+    let lastError;
 
-    // Refresh the dashboard data
-    revalidatePath("/civilian");
+    // Retry Loop
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const newPost = await prisma.post.create({
+          data: {
+            description: formData.description,
+            address: formData.address,
+            images: formData.images,
+            userId: clerkId,
+            longitude: formData?.lng,
+            latitude: formData?.lat,
+            severity: formData.severity,
+          },
+        });
 
-    return { success: true, data: newPost };
-  } catch (error) {
-    console.error("Prisma Error:", error);
+        // If successful, revalidate and return immediately
+        revalidatePath("/civilian");
+        return { success: true, data: newPost };
+      } catch (error) {
+        lastError = error;
+        console.warn(`Database attempt ${attempt} failed. Retrying in 1s...`);
+
+        // Wait 1 second before next attempt
+        if (attempt < maxRetries) await sleep(1000);
+      }
+    }
+
+    // If we reach here, all retries failed
+    throw lastError;
+  } catch (error: any) {
+    console.error("Final Prisma Error after retries:", error);
     return {
       success: false,
-      error: "Failed to save the report to the database.",
+      error: "Failed to save the report after multiple attempts.",
     };
   }
 }
