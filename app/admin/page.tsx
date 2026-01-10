@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 
 function AdminDashboard() {
   // Mock complaints data
@@ -433,9 +434,12 @@ function AdminDashboard() {
                       <option value="In Progress">In Progress</option>
                       <option value="Fixed">Fixed</option>
                     </select>
-                    <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <Link
+                      href="/complaints/9832"
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
                       Details
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

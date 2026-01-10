@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import ExifReader from "exifreader";
+import { uploadToCloudinary } from "./uploadCloudinary";
 
 function ReportPotholeUpload() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
@@ -12,7 +14,13 @@ function ReportPotholeUpload() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  const [coordinates, setCoordinates] = useState<
+    | {
+        lat: number;
+        lng: number;
+      }
+    | { lat: ""; lng: "" }
+  >({ lat: "", lng: "" });
   // Handle file selection
   const handleFileSelect = (e: any) => {
     const files: File[] = Array.from(e.target.files);
@@ -20,15 +28,42 @@ function ReportPotholeUpload() {
   };
 
   // Add files to the upload list
-  const addFiles = (files: File[]) => {
-    const newFiles = files.map((file: File) => ({
-      file,
-      id: Math.random().toString(36).substr(2, 9),
-      preview: URL.createObjectURL(file),
-      name: file.name,
-      size: (file.size / 1024 / 1024).toFixed(2), // Convert to MB
-      type: file.type,
-    }));
+  const addFiles = async (files: File[]) => {
+    let extractedCoords: { lat: number; lng: number } | null = null;
+
+    const newFiles = await Promise.all(
+      files.map(async (file: File) => {
+        try {
+          const tags = await ExifReader.load(file);
+          // ExifReader returns coordinates as decimal numbers in the 'description' field
+          const lat = tags["GPSLatitude"]?.description;
+          const lng = tags["GPSLongitude"]?.description;
+
+          if (lat && lng && !extractedCoords) {
+            extractedCoords = {
+              lat: parseFloat(lat),
+              lng: parseFloat(lng),
+            };
+          }
+        } catch (error) {
+          console.log("No metadata in:", file.name);
+        }
+
+        return {
+          file,
+          id: Math.random().toString(36).substr(2, 9),
+          preview: URL.createObjectURL(file),
+          name: file.name,
+          size: (file.size / 1024 / 1024).toFixed(2),
+          type: file.type,
+        };
+      })
+    );
+
+    // Store coordinates in state if found
+    if (extractedCoords) {
+      setCoordinates(extractedCoords);
+    }
 
     setUploadedFiles((prev) => [...prev, ...newFiles]);
   };
@@ -80,45 +115,56 @@ function ReportPotholeUpload() {
   };
 
   // Handle form submission
-  const handleSubmit = () => {
-    // Validation
+  const handleSubmit = async () => {
+    // 1. Validation
     if (uploadedFiles.length === 0) {
-      alert("Please upload at least one image of the pothole");
+      alert("Please upload at least one image");
       return;
     }
-
     if (!formData.location.trim()) {
-      alert("Please provide a location");
+      alert("Please provide an address");
       return;
     }
 
     setIsSubmitting(true);
 
-    // Mock submission
-    console.log("Submitting report:", {
-      files: uploadedFiles.map((f: any) => f.name),
-      location: formData.location,
-      description: formData.description,
-      severity: formData.severity,
-      timestamp: new Date().toISOString(),
-    });
+    try {
+      // 2. Upload all images to Cloudinary in parallel
+      const uploadPromises = uploadedFiles.map((fileItem) =>
+        uploadToCloudinary(fileItem.file)
+      );
+      const imageUrls = await Promise.all(uploadPromises);
 
-    // Simulate API call
-    setTimeout(() => {
+      // 3. Construct the final object for YOUR database
+      const finalReport = {
+        address: formData.location, // User's typed address
+        lat: coordinates?.lat || null, // Geotagged Latitude
+        lng: coordinates?.lng || null, // Geotagged Longitude
+        description: formData.description,
+        severity: formData.severity,
+        images: imageUrls, // Array of Cloudinary URLs
+        timestamp: new Date().toISOString(),
+      };
+
+      console.log("FINAL DATA FOR YOUR DB:", finalReport);
+
+      // 4. Send finalReport to your backend (e.g., fetch('/api/potholes', ...))
+
       setIsSubmitting(false);
       setShowSuccessModal(true);
 
-      // Reset form after 3 seconds
+      // Reset logic
       setTimeout(() => {
         setShowSuccessModal(false);
         setUploadedFiles([]);
-        setFormData({
-          location: "",
-          description: "",
-          severity: "Medium",
-        });
+        setCoordinates({ lat: "", lng: "" });
+        setFormData({ location: "", description: "", severity: "Medium" });
       }, 3000);
-    }, 2000);
+    } catch (error) {
+      console.error("Upload failed:", error);
+      alert("Failed to upload images. Please try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (

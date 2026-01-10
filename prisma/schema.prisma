@@ -17,13 +17,14 @@ model User {
 }
 
 model Post {
-  id        String   @id @default(cuid())
-  problem   String?
-  address   String
-  longitude Float
-  latitude  Float
-  images    String[]
-  createdAt DateTime @default(now())
-  userId    String
-  user      User     @relation(fields: [userId], references: [clerkUserId], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  description String?
+  address     String
+  longitude   Float
+  latitude    Float
+  images      String[]
+  dimension   String[]
+  createdAt   DateTime @default(now())
+  userId      String
+  user        User     @relation(fields: [userId], references: [clerkUserId], onDelete: Cascade)
 }

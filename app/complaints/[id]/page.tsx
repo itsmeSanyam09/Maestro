@@ -144,7 +144,7 @@ function CivilianComplaintDetail() {
         {/* Header */}
         <div className="mb-6">
           <Link
-            href="/civilian"
+            href="/admin"
             className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium mb-4 transition-colors"
           >
             <svg
@@ -331,7 +331,7 @@ function CivilianComplaintDetail() {
                   value={formatDate(complaint.dateReported)}
                   highlight={true}
                 />
-                <DetailItem
+                {/* <DetailItem
                   icon={
                     <svg
                       className="w-5 h-5"
@@ -349,7 +349,7 @@ function CivilianComplaintDetail() {
                   }
                   label="Last Updated"
                   value={formatDate(complaint.lastUpdated)}
-                />
+                /> */}
                 <DetailItem
                   icon={
                     <svg
@@ -461,7 +461,7 @@ function CivilianComplaintDetail() {
                   highlight={true}
                 />
 
-                <div className="grid grid-cols-2 gap-3">
+                {/* <div className="grid grid-cols-2 gap-3">
                   <DetailItem
                     icon={
                       <svg
@@ -500,7 +500,7 @@ function CivilianComplaintDetail() {
                     label="State"
                     value={complaint.location.state}
                   />
-                </div>
+                </div> */}
 
                 <DetailItem
                   icon={
@@ -640,7 +640,7 @@ function CivilianComplaintDetail() {
                   label="Traffic Impact"
                   value={complaint.trafficImpact}
                 />
-                <DetailItem
+                {/* <DetailItem
                   icon={
                     <svg
                       className="w-5 h-5"
@@ -658,7 +658,7 @@ function CivilianComplaintDetail() {
                   }
                   label="Weather Condition"
                   value={complaint.weatherCondition}
-                />
+                /> */}
               </div>
             </div>
 
