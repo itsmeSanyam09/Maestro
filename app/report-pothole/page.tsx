@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import ExifReader from "exifreader";
 import { uploadToCloudinary } from "./uploadCloudinary";
@@ -74,7 +74,7 @@ function ReportPotholeUpload() {
         };
       })
     );
-    if (extractedCoords) setCoordinates(extractedCoords);
+
     setUploadedFiles((prev) => [...prev, ...newFiles]);
   };
 
@@ -117,7 +117,32 @@ function ReportPotholeUpload() {
     }
   };
 
-  // --- EXISTING LOGIC: Submit Handler ---
+  // Inside ReportPotholeUpload component...
+
+  useEffect(() => {
+    const triggerInitialLocationRequest = () => {
+      if (!navigator.geolocation) return;
+
+      // This line triggers the browser's "Allow Location" popup
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          console.log("Initial Location Seized");
+        },
+        (error) => {
+          // Log the error but don't break the app
+          console.warn("Location permission denied on load:", error.message);
+        },
+        { enableHighAccuracy: true }
+      );
+    };
+
+    triggerInitialLocationRequest();
+  }, []); // Empty array ensures this only runs ONCE on page load
+
   const handleSubmit = async () => {
     if (uploadedFiles.length === 0) return alert("Please upload an image");
     if (!formData.location.trim()) return alert("Please provide an address");
@@ -151,12 +176,13 @@ function ReportPotholeUpload() {
         .filter((result: any) => result.success)
         .map((result: any) => result.url);
 
-      // 3. Save to Prisma
+      console.log("coordinates:", coordinates);
+      // 4. SAVE TO PRISMA
       const finalReport = {
         address: formData.location,
-        lat: coordinates?.lat || null,
-        lng: coordinates?.lng || null,
-        description: finalDescription,
+        lat: coordinates.lat || null,
+        lng: coordinates.lng || null,
+        description: formData.description,
         severity: formData.severity,
         images: imageUrls,
       };
@@ -216,8 +242,17 @@ function ReportPotholeUpload() {
               <div className="flex flex-col items-center">
                 <p className="text-gray-500 mb-4">Drag and drop or</p>
                 <label className="cursor-pointer">
-                  <input type="file" multiple accept="image/*" onChange={handleFileSelect} className="hidden" />
-                  <span className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors inline-block">Browse Files</span>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <span className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors inline-block">
+                    Browse Files
+                  </span>
                 </label>
               </div>
             </div>
