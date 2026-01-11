@@ -31,7 +31,7 @@ function SignUpPage() {
         emailAddress,
         password,
       });
-
+        console.log("SignUp Created");
       const value = await signUp.prepareEmailAddressVerification({
         strategy: "email_code",
       });

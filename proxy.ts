@@ -5,7 +5,7 @@ import {
 } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
-const isPublicRoute = ["/", "/login", "/register"];
+const isPublicRoute = ["/", "/login", "/register", "/dimension", "/api/pothole"];
 
 export default clerkMiddleware(async (auth, req) => {
   // Retrieve session claims

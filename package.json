@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.36.5",
+    "@google/genai": "^1.35.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.2.0",
     "@prisma/adapter-pg": "^7.2.0",
@@ -20,7 +21,6 @@
     "exifreader": "^4.35.0",
     "next": "16.1.1",
     "pg": "^8.16.3",
-    "prisma": "^7.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "ws": "^8.19.0"
@@ -32,6 +32,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
+    "prisma": "^7.2.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
