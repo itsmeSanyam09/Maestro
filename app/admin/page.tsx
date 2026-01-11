@@ -1,20 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { fetchAllComplaints, updateComplaintStatus } from "./actions";
+
+interface Complaint {
+  id: string;
+  reporterName: string;
+  image: string;
+  status: string;
+  location: string;
+  longitude: number | null;
+  latitude: number | null;
+  severity: string;
+  dateReported: string;
+  description: string | null;
+}
 
 function AdminDashboard() {
   // Mock complaints data
-  const [complaints] = useState([
+  const [complaints, setComplaints] = useState<Complaint[]>([
     {
       id: "RPT-001",
       reporterName: "Rajesh Kumar",
       image:
         "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=400&h=300&fit=crop",
-      location: "MG Road, Connaught Place, New Delhi",
-      city: "New Delhi",
       status: "Pending",
+      location: "MG Road, Connaught Place, New Delhi",
+      longitude: 77.2167,
+      latitude: 28.6315,
+      severity: "High",
       dateReported: "2024-12-28",
-      priority: "High",
       description: "Large pothole causing traffic issues",
     },
     {
@@ -22,11 +37,12 @@ function AdminDashboard() {
       reporterName: "Priya Sharma",
       image:
         "https://images.unsplash.com/photo-1621544402532-9f4e1f5d0ca5?w=400&h=300&fit=crop",
-      location: "Sector 18, Noida",
-      city: "Noida",
       status: "In Progress",
+      location: "Sector 18, Noida",
+      longitude: 77.391,
+      latitude: 28.5708,
+      severity: "Medium",
       dateReported: "2024-12-27",
-      priority: "Medium",
       description: "Multiple small potholes on main road",
     },
     {
@@ -34,11 +50,12 @@ function AdminDashboard() {
       reporterName: "Amit Patel",
       image:
         "https://images.unsplash.com/photo-1611857308091-a5e3bc6c4137?w=400&h=300&fit=crop",
-      location: "Rajiv Chowk, Gurgaon",
-      city: "Gurgaon",
       status: "Fixed",
+      location: "Rajiv Chowk, Gurgaon",
+      longitude: 77.0727,
+      latitude: 28.4595,
+      severity: "High",
       dateReported: "2024-12-25",
-      priority: "High",
       description: "Deep pothole near traffic signal",
     },
     {
@@ -46,80 +63,56 @@ function AdminDashboard() {
       reporterName: "Sneha Reddy",
       image:
         "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=400&h=300&fit=crop",
+      status: "Pending",
       location: "Lajpat Nagar Market, South Delhi",
-      city: "New Delhi",
-      status: "Pending",
+      longitude: 77.239,
+      latitude: 28.5677,
+      severity: "Low",
       dateReported: "2024-12-26",
-      priority: "Low",
       description: "Road damage near market entrance",
-    },
-    {
-      id: "RPT-005",
-      reporterName: "Vikram Singh",
-      image:
-        "https://images.unsplash.com/photo-1621544402532-9f4e1f5d0ca5?w=400&h=300&fit=crop",
-      location: "Nehru Place, New Delhi",
-      city: "New Delhi",
-      status: "In Progress",
-      dateReported: "2024-12-24",
-      priority: "Medium",
-      description: "Pothole repair in progress",
-    },
-    {
-      id: "RPT-006",
-      reporterName: "Anita Desai",
-      image:
-        "https://images.unsplash.com/photo-1611857308091-a5e3bc6c4137?w=400&h=300&fit=crop",
-      location: "Dwarka Sector 21, New Delhi",
-      city: "New Delhi",
-      status: "Fixed",
-      dateReported: "2024-12-22",
-      priority: "High",
-      description: "Road surface damage after rain",
-    },
-    {
-      id: "RPT-007",
-      reporterName: "Rahul Verma",
-      image:
-        "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=400&h=300&fit=crop",
-      location: "DLF Phase 3, Gurgaon",
-      city: "Gurgaon",
-      status: "Pending",
-      dateReported: "2024-12-29",
-      priority: "High",
-      description: "Severe pothole causing accidents",
-    },
-    {
-      id: "RPT-008",
-      reporterName: "Meera Iyer",
-      image:
-        "https://images.unsplash.com/photo-1621544402532-9f4e1f5d0ca5?w=400&h=300&fit=crop",
-      location: "Sector 62, Noida",
-      city: "Noida",
-      status: "In Progress",
-      dateReported: "2024-12-23",
-      priority: "Medium",
-      description: "Multiple potholes on service lane",
     },
   ]);
 
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const result = await fetchAllComplaints();
+      if (result.length > 0) {
+        setComplaints(result);
+      }
+      console.log(result);
+    };
+    fetchPosts();
+  }, []);
+  const handleStatusChange = async (complaintId: string, newStatus: string) => {
+    // 1. Optimistic UI update: Update local state immediately
+    const originalComplaints = [...complaints];
+    setComplaints((prev) =>
+      prev.map((c) => (c.id === complaintId ? { ...c, status: newStatus } : c))
+    );
+
+    // 2. Database update
+    const result = await updateComplaintStatus(complaintId, newStatus);
+
+    if (!result.success) {
+      // 3. Revert if database update fails
+      setComplaints(originalComplaints);
+      alert("Failed to update status in database.");
+    } else {
+      console.log(`Successfully updated ${complaintId} to ${newStatus}`);
+    }
+  };
   const [filters, setFilters] = useState({
     status: "All",
-    location: "All",
     searchQuery: "",
   });
 
   const [viewMode, setViewMode] = useState("grid"); // 'grid' or 'table'
 
-  // Get unique cities for location filter
-  const cities = ["All", ...new Set(complaints.map((c) => c.city))];
-
   // Filter complaints
   const filteredComplaints = complaints.filter((complaint) => {
     const statusMatch =
       filters.status === "All" || complaint.status === filters.status;
-    const locationMatch =
-      filters.location === "All" || complaint.city === filters.location;
+
     const searchMatch =
       filters.searchQuery === "" ||
       complaint.id.toLowerCase().includes(filters.searchQuery.toLowerCase()) ||
@@ -130,14 +123,13 @@ function AdminDashboard() {
         .toLowerCase()
         .includes(filters.searchQuery.toLowerCase());
 
-    return statusMatch && locationMatch && searchMatch;
+    return statusMatch && searchMatch;
   });
 
   // Status stats
   const stats = {
     total: complaints.length,
     pending: complaints.filter((c) => c.status === "Pending").length,
-    inProgress: complaints.filter((c) => c.status === "In Progress").length,
     fixed: complaints.filter((c) => c.status === "Fixed").length,
   };
 
@@ -167,11 +159,6 @@ function AdminDashboard() {
     }
   };
 
-  const handleStatusChange = (complaintId: any, newStatus: any) => {
-    console.log(`Changing status of ${complaintId} to ${newStatus}`);
-    alert(`Status updated to "${newStatus}" for complaint ${complaintId}`);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -182,6 +169,27 @@ function AdminDashboard() {
           </h1>
           <p className="text-gray-600">Manage and track all pothole reports</p>
         </div>
+
+        {/* Map Navigation Button */}
+        <Link
+          href="/admin/map"
+          className="absolute top-20 right-10 flex items-center w-[15rem] justify-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-lg transition-all transform hover:scale-105 active:scale-95"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+            />
+          </svg>
+          View Complaint Map
+        </Link>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -196,12 +204,6 @@ function AdminDashboard() {
               {stats.pending}
             </div>
             <div className="text-sm text-gray-600 mt-1">Pending</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
-            <div className="text-3xl font-bold text-gray-800">
-              {stats.inProgress}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">In Progress</div>
           </div>
           <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
             <div className="text-3xl font-bold text-gray-800">
@@ -256,21 +258,6 @@ function AdminDashboard() {
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Fixed">Fixed</option>
-              </select>
-
-              {/* Location Filter */}
-              <select
-                value={filters.location}
-                onChange={(e) =>
-                  setFilters({ ...filters, location: e.target.value })
-                }
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
-              >
-                {cities.map((city) => (
-                  <option key={city} value={city}>
-                    {city === "All" ? "All Locations" : city}
-                  </option>
-                ))}
               </select>
 
               {/* View Toggle */}
@@ -357,10 +344,10 @@ function AdminDashboard() {
                       </h3>
                       <span
                         className={`text-xs font-semibold ${getPriorityColor(
-                          complaint.priority
+                          complaint.severity
                         )}`}
                       >
-                        {complaint.priority} Priority
+                        {complaint.severity} Priority
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 line-clamp-2">
@@ -431,11 +418,10 @@ function AdminDashboard() {
                       className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                     >
                       <option value="Pending">Pending</option>
-                      <option value="In Progress">In Progress</option>
                       <option value="Fixed">Fixed</option>
                     </select>
                     <Link
-                      href="/complaints/9832"
+                      href={`admin/complaints/${complaint.id}`}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
                     >
                       Details
@@ -504,17 +490,14 @@ function AdminDashboard() {
                         <div className="text-sm text-gray-900 max-w-xs">
                           {complaint.location}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {complaint.city}
-                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`text-sm font-semibold ${getPriorityColor(
-                            complaint.priority
+                            complaint.severity
                           )}`}
                         >
-                          {complaint.priority}
+                          {complaint.severity}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

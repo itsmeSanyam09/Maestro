@@ -1,10 +1,47 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { getPostById } from "../../actions";
+import { useParams } from "next/navigation";
+
+interface ComplaintDetail {
+  id: string;
+  images: string[];
+  status: string;
+  severity: string;
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    coordinates: {
+      latitude: number | null;
+      longitude: number | null;
+    };
+  };
+  dateReported: string | Date;
+  lastUpdated?: string | Date;
+  description: string | null;
+  dimensions: {
+    length: number;
+    width: number;
+    depth: number;
+  };
+  estimatedCost: number;
+  assignedTeam: string;
+  estimatedCompletionDate: string;
+  damageType: string;
+  trafficImpact: string;
+  weatherCondition: string;
+  nearbyLandmarks: string[];
+  reporterNotes: string;
+}
 
 function CivilianComplaintDetail() {
   // Mock complaint data - would come from route params in real app
-  const [complaint] = useState({
+  const params = useParams();
+  const id: string = String(params?.id);
+  const [complaint, setComplaint] = useState<ComplaintDetail>({
     id: "RPT-001",
     images: [
       "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=800&h=600&fit=crop",
@@ -49,6 +86,17 @@ function CivilianComplaintDetail() {
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isImageExpanded, setIsImageExpanded] = useState(false);
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      const result = await getPostById(id);
+      if (result && result.images && result.dimensions) {
+        setComplaint(result);
+      }
+      console.log(result);
+    };
+    fetchPost();
+  }, []);
 
   const getStatusColor = (status: any) => {
     switch (status) {

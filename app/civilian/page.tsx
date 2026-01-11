@@ -300,12 +300,12 @@ function CivilianDashboard() {
                       </div>
                     </div>
 
-                    <Link
+                    {/* <Link
                       href={`/complaints/${complaint.id}`}
                       className="w-full bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm"
                     >
                       View Details
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
               ))}
