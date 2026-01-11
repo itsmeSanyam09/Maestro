@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import ExifReader from "exifreader";
 import { uploadToCloudinary } from "./uploadCloudinary";
@@ -71,11 +71,6 @@ function ReportPotholeUpload() {
       })
     );
 
-    // Store coordinates in state if found
-    if (extractedCoords) {
-      setCoordinates(extractedCoords);
-    }
-
     setUploadedFiles((prev) => [...prev, ...newFiles]);
   };
 
@@ -134,6 +129,30 @@ function ReportPotholeUpload() {
 
   // Inside ReportPotholeUpload component...
 
+  useEffect(() => {
+    const triggerInitialLocationRequest = () => {
+      if (!navigator.geolocation) return;
+
+      // This line triggers the browser's "Allow Location" popup
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          console.log("Initial Location Seized");
+        },
+        (error) => {
+          // Log the error but don't break the app
+          console.warn("Location permission denied on load:", error.message);
+        },
+        { enableHighAccuracy: true }
+      );
+    };
+
+    triggerInitialLocationRequest();
+  }, []); // Empty array ensures this only runs ONCE on page load
+
   const handleSubmit = async () => {
     if (uploadedFiles.length === 0) return alert("Please upload an image");
     if (!formData.location.trim()) return alert("Please provide an address");
@@ -168,11 +187,12 @@ function ReportPotholeUpload() {
         .filter((result: any) => result.success)
         .map((result: any) => result.url);
 
+      console.log("coordinates:", coordinates);
       // 4. SAVE TO PRISMA
       const finalReport = {
         address: formData.location,
-        lat: coordinates?.lat || null,
-        lng: coordinates?.lng || null,
+        lat: coordinates.lat || null,
+        lng: coordinates.lng || null,
         description: formData.description,
         severity: formData.severity,
         images: imageUrls,
@@ -190,61 +210,6 @@ function ReportPotholeUpload() {
       setIsSubmitting(false);
     }
   };
-
-  // Handle form submission
-  // const handleSubmit = async () => {
-  //   // 1. Validation
-  //   if (uploadedFiles.length === 0) {
-  //     alert("Please upload at least one image");
-  //     return;
-  //   }
-  //   if (!formData.location.trim()) {
-  //     alert("Please provide an address");
-  //     return;
-  //   }
-
-  //   setIsSubmitting(true);
-
-  //   try {
-  //     // 2. Upload all images to Cloudinary in parallel
-  //     const uploadPromises = uploadedFiles.map((fileItem) =>
-  //       uploadToCloudinary(fileItem.file)
-  //     );
-  //     const uploadResults = await Promise.all(uploadPromises);
-  //     const imageUrls = uploadResults
-  //       .filter((result: any) => result.success)
-  //       .map((result: any) => result.url);
-
-  //     // 3. Construct the final object for YOUR database
-  //     const finalReport = {
-  //       address: formData.location, // User's typed address
-  //       lat: coordinates?.lat || null, // Geotagged Latitude
-  //       lng: coordinates?.lng || null, // Geotagged Longitude
-  //       description: formData.description,
-  //       severity: formData.severity,
-  //       images: imageUrls, // Array of Cloudinary URLs
-  //     };
-  //     const result = await createPotholeReport(finalReport);
-  //     console.log("FINAL DATA FOR YOUR DB:", finalReport);
-
-  //     // 4. Send finalReport to your backend (e.g., fetch('/api/potholes', ...))
-
-  //     setIsSubmitting(false);
-  //     setShowSuccessModal(true);
-
-  //     // Reset logic
-  //     setTimeout(() => {
-  //       setShowSuccessModal(false);
-  //       setUploadedFiles([]);
-  //       setCoordinates({ lat: "", lng: "" });
-  //       setFormData({ location: "", description: "", severity: "Medium" });
-  //     }, 3000);
-  //   } catch (error) {
-  //     console.error("Upload failed:", error);
-  //     alert("Failed to upload images. Please try again.");
-  //     setIsSubmitting(false);
-  //   }
-  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-8 px-4">
@@ -352,6 +317,7 @@ function ReportPotholeUpload() {
                     type="file"
                     multiple
                     accept="image/*"
+                    capture="environment"
                     onChange={handleFileSelect}
                     className="hidden"
                   />
