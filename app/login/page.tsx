@@ -53,7 +53,7 @@ function LoginPage() {
             Welcome to Raahi
           </h1>
         </div>
-        {/* Role Selection or Login Form */}(
+        {/* Role Selection or Login Form */}
         <div className="max-w-md mx-auto">
           {/* Login Form */}
           <div className="bg-white rounded-lg shadow-lg p-8">
@@ -139,11 +139,11 @@ function LoginPage() {
               </div>
 
               {/* Forgot Password Link */}
-              <div className="text-right">
+              {/*<div className="text-right">
                 <button className="text-sm text-blue-600 hover:text-blue-800">
                   Forgot Password?
                 </button>
-              </div>
+              </div> */}
 
               {/* Login Button */}
               <button
@@ -172,7 +172,6 @@ function LoginPage() {
           </p>
         </div>
       </div>
-      )
     </div>
   );
 }

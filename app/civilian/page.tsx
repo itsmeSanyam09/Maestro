@@ -29,70 +29,6 @@ function CivilianDashboard() {
     fetchPosts();
   }, []);
 
-  // const [filterStatus, setFilterStatus] = useState("All");
-
-  // const getStatusColor = (status: any) => {
-  //   switch (status) {
-  //     case "Fixed":
-  //       return "bg-green-100 text-green-800 border-green-200";
-  //     case "In Progress":
-  //       return "bg-yellow-100 text-yellow-800 border-yellow-200";
-  //     case "Pending":
-  //       return "bg-red-100 text-red-800 border-red-200";
-  //     default:
-  //       return "bg-gray-100 text-gray-800 border-gray-200";
-  //   }
-  // };
-
-  // const getStatusIcon = (status: any) => {
-  //   switch (status) {
-  //     case "Fixed":
-  //       return (
-  //         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-  //           <path
-  //             fillRule="evenodd"
-  //             d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-  //             clipRule="evenodd"
-  //           />
-  //         </svg>
-  //       );
-  //     case "In Progress":
-  //       return (
-  //         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-  //           <path
-  //             fillRule="evenodd"
-  //             d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-  //             clipRule="evenodd"
-  //           />
-  //         </svg>
-  //       );
-  //     case "Pending":
-  //       return (
-  //         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-  //           <path
-  //             fillRule="evenodd"
-  //             d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-  //             clipRule="evenodd"
-  //           />
-  //         </svg>
-  //       );
-  //     default:
-  //       return null;
-  //   }
-  // };
-
-  // const filteredComplaints =
-  //   filterStatus === "All"
-  //     ? complaints
-  //     : complaints.filter((c) => c.status === filterStatus);
-
-  // const statusCounts = {
-  //   All: complaints.length,
-  //   Pending: complaints.filter((c) => c.status === "Pending").length,
-  //   "In Progress": complaints.filter((c) => c.status === "In Progress").length,
-  //   Fixed: complaints.filter((c) => c.status === "Fixed").length,
-  // };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="container mx-auto max-w-7xl">
@@ -112,24 +48,6 @@ function CivilianDashboard() {
             </div>
             <div className="text-sm text-gray-600 mt-1">Total Reports</div>
           </div>
-          {/* <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-            <div className="text-3xl font-bold text-gray-800">
-              {statusCounts.Pending}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">Pending</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
-            <div className="text-3xl font-bold text-gray-800">
-              {statusCounts["In Progress"]}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">In Progress</div>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-            <div className="text-3xl font-bold text-gray-800">
-              {statusCounts.Fixed}
-            </div>
-            <div className="text-sm text-gray-600 mt-1">Fixed</div>
-          </div> */}
         </div>
 
         {/* Action Bar */}
@@ -165,32 +83,8 @@ function CivilianDashboard() {
           </div>
         </div>
 
-        {/* Filter Tabs */}
-        {/*<div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="flex flex-wrap gap-2">
-            {["All", "Pending", "In Progress", "Fixed"].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  filterStatus === status
-                    ? "bg-blue-900 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                
-                {status} ({statusCounts[status]})
-              </button>
-            ))}
-          </div>
-        </div> */}
-
         {/* Complaints Grid */}
         <div>
-          {/* <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            {filterStatus === "All" ? "All Reports" : `${filterStatus} Reports`}
-          </h2> */}
-
           {complaints.length === 0 ? (
             <div className="bg-white rounded-lg shadow-md p-12 text-center">
               <svg
@@ -224,16 +118,6 @@ function CivilianDashboard() {
                       alt="Pothole"
                       className="w-full h-full object-cover"
                     />
-                    {/* <div className="absolute top-3 right-3">
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                          complaint.status
-                        )}`}
-                      >
-                        {getStatusIcon(complaint.status)}
-                        {complaint.status}
-                      </span>
-                    </div> */}
                   </div>
 
                   {/* Content */}
@@ -300,12 +184,12 @@ function CivilianDashboard() {
                       </div>
                     </div>
 
-                    <Link
+                    {/* <Link
                       href={`/complaints/${complaint.id}`}
                       className="w-full bg-blue-50 hover:bg-blue-100 text-blue-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm"
                     >
                       View Details
-                    </Link>
+                    </Link> */}
                   </div>
                 </div>
               ))}

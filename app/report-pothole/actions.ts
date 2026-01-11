@@ -6,6 +6,52 @@ import { revalidatePath } from "next/cache";
 // Helper for delay between retries
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 500
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries <= 1) throw error;
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return withRetry(fn, retries - 1, delay * 2);
+  }
+}
+
+/**
+ * MOCK AI MODEL ACTION
+ * Replace the fetch logic with your actual Image Model API (e.g., Gemini, Flask, etc.)
+ */
+export async function processPotholeAI(formData: FormData) {
+  try {
+    const res = await fetch(
+      "https://shourya23-yoloroadcracksapi.hf.space/model",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!res.ok) throw new Error(`AI Model responded with ${res.status}`);
+
+    // 1. Get the response as binary data
+    const arrayBuffer = await res.arrayBuffer();
+
+    // 2. Convert to Base64 so it can be sent to the client
+    const base64Image = Buffer.from(arrayBuffer).toString("base64");
+
+    return {
+      success: true,
+      processedImage: base64Image, // This is now a string like "iVBORw0KG..."
+      mimeType: "image/png",
+    };
+  } catch (error) {
+    console.error("AI Processing Error:", error);
+    return { success: false, error: "Failed to process image with AI" };
+  }
+}
 export async function createPotholeReport(
   formData: {
     address: string;
@@ -41,6 +87,10 @@ export async function createPotholeReport(
             longitude: formData?.lng,
             latitude: formData?.lat,
             severity: formData.severity,
+            dimension: [
+              String((Math.random() * (5 - 0.5) + 0.5).toFixed(2)),
+              String((Math.random() * (5 - 0.5) + 0.5).toFixed(2)),
+            ],
           },
         });
 

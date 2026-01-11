@@ -3,7 +3,17 @@ import { useState } from "react";
 import Link from "next/link";
 import ExifReader from "exifreader";
 import { uploadToCloudinary } from "./uploadCloudinary";
-import { createPotholeReport } from "./actions";
+import { createPotholeReport, processPotholeAI } from "./actions";
+
+const base64ToFile = (base64: string, filename: string, mimeType: string) => {
+  const byteString = atob(base64);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new File([ab], filename, { type: mimeType });
+};
 
 function ReportPotholeUpload() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
@@ -115,60 +125,126 @@ function ReportPotholeUpload() {
     });
   };
 
-  // Handle form submission
+  // Helper to convert Base64/Blob to File object for Cloudinary
+  const urlToFile = async (url: string, filename: string, mimeType: string) => {
+    const res = await fetch(url);
+    const buf = await res.arrayBuffer();
+    return new File([buf], filename, { type: mimeType });
+  };
+
+  // Inside ReportPotholeUpload component...
+
   const handleSubmit = async () => {
-    // 1. Validation
-    if (uploadedFiles.length === 0) {
-      alert("Please upload at least one image");
-      return;
-    }
-    if (!formData.location.trim()) {
-      alert("Please provide an address");
-      return;
-    }
+    if (uploadedFiles.length === 0) return alert("Please upload an image");
+    if (!formData.location.trim()) return alert("Please provide an address");
 
     setIsSubmitting(true);
 
     try {
-      // 2. Upload all images to Cloudinary in parallel
-      const uploadPromises = uploadedFiles.map((fileItem) =>
-        uploadToCloudinary(fileItem.file)
+      // 1. UPLOAD FIRST IMAGE TO IMAGE MODEL
+      const aiFormData = new FormData();
+      aiFormData.append("image", uploadedFiles[0].file);
+
+      const aiResponse = await processPotholeAI(aiFormData);
+
+      let filesForCloudinary = uploadedFiles.map((f) => f.file);
+
+      // 2. APPEND IMAGE RETURNED FROM MODEL (if applicable)
+      if (aiResponse.success && aiResponse.processedImage) {
+        const aiFile = base64ToFile(
+          aiResponse.processedImage,
+          "processed_pothole.png",
+          "image/png"
+        );
+        filesForCloudinary.push(aiFile);
+      }
+
+      // 3. UPLOAD ALL TO CLOUDINARY
+      const uploadPromises = filesForCloudinary.map((file) =>
+        uploadToCloudinary(file)
       );
       const uploadResults = await Promise.all(uploadPromises);
       const imageUrls = uploadResults
         .filter((result: any) => result.success)
         .map((result: any) => result.url);
 
-      // 3. Construct the final object for YOUR database
+      // 4. SAVE TO PRISMA
       const finalReport = {
-        address: formData.location, // User's typed address
-        lat: coordinates?.lat || null, // Geotagged Latitude
-        lng: coordinates?.lng || null, // Geotagged Longitude
+        address: formData.location,
+        lat: coordinates?.lat || null,
+        lng: coordinates?.lng || null,
         description: formData.description,
         severity: formData.severity,
-        images: imageUrls, // Array of Cloudinary URLs
+        images: imageUrls,
       };
-      const result = await createPotholeReport(finalReport);
-      console.log("FINAL DATA FOR YOUR DB:", finalReport);
 
-      // 4. Send finalReport to your backend (e.g., fetch('/api/potholes', ...))
+      await createPotholeReport(finalReport);
+      console.log(finalReport);
 
       setIsSubmitting(false);
       setShowSuccessModal(true);
-
-      // Reset logic
-      setTimeout(() => {
-        setShowSuccessModal(false);
-        setUploadedFiles([]);
-        setCoordinates({ lat: "", lng: "" });
-        setFormData({ location: "", description: "", severity: "Medium" });
-      }, 3000);
+      // ... (reset logic)
     } catch (error) {
-      console.error("Upload failed:", error);
-      alert("Failed to upload images. Please try again.");
+      console.error("Workflow failed:", error);
+      alert("An error occurred during processing. Please try again.");
       setIsSubmitting(false);
     }
   };
+
+  // Handle form submission
+  // const handleSubmit = async () => {
+  //   // 1. Validation
+  //   if (uploadedFiles.length === 0) {
+  //     alert("Please upload at least one image");
+  //     return;
+  //   }
+  //   if (!formData.location.trim()) {
+  //     alert("Please provide an address");
+  //     return;
+  //   }
+
+  //   setIsSubmitting(true);
+
+  //   try {
+  //     // 2. Upload all images to Cloudinary in parallel
+  //     const uploadPromises = uploadedFiles.map((fileItem) =>
+  //       uploadToCloudinary(fileItem.file)
+  //     );
+  //     const uploadResults = await Promise.all(uploadPromises);
+  //     const imageUrls = uploadResults
+  //       .filter((result: any) => result.success)
+  //       .map((result: any) => result.url);
+
+  //     // 3. Construct the final object for YOUR database
+  //     const finalReport = {
+  //       address: formData.location, // User's typed address
+  //       lat: coordinates?.lat || null, // Geotagged Latitude
+  //       lng: coordinates?.lng || null, // Geotagged Longitude
+  //       description: formData.description,
+  //       severity: formData.severity,
+  //       images: imageUrls, // Array of Cloudinary URLs
+  //     };
+  //     const result = await createPotholeReport(finalReport);
+  //     console.log("FINAL DATA FOR YOUR DB:", finalReport);
+
+  //     // 4. Send finalReport to your backend (e.g., fetch('/api/potholes', ...))
+
+  //     setIsSubmitting(false);
+  //     setShowSuccessModal(true);
+
+  //     // Reset logic
+  //     setTimeout(() => {
+  //       setShowSuccessModal(false);
+  //       setUploadedFiles([]);
+  //       setCoordinates({ lat: "", lng: "" });
+  //       setFormData({ location: "", description: "", severity: "Medium" });
+  //     }, 3000);
+  //   } catch (error) {
+  //     console.error("Upload failed:", error);
+  //     alert("Failed to upload images. Please try again.");
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-8 px-4">

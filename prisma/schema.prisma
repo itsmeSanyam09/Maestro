@@ -27,5 +27,6 @@ model Post {
   severity    String   @default("medium")
   createdAt   DateTime @default(now())
   userId      String
+  status      String   @default("pending")
   user        User     @relation(fields: [userId], references: [clerkUserId], onDelete: Cascade)
 }

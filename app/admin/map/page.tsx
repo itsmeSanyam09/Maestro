@@ -1,37 +1,37 @@
 "use client";
-import React from "react";
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
 
-const containerStyle = {
-  width: "100%",
-  height: "600px",
-  borderRadius: "12px",
-};
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
-// Hardcoded Shastri Nagar, Delhi Coordinates
-const shastriNagar = {
-  lat: 28.6692,
-  lng: 77.1704,
-};
+const locations = [
+  { latitude: 28.6139, longitude: 77.209, label: "Connaught Place" },
+  { latitude: 28.5244, longitude: 77.1855, label: "Mehrauli" },
+  { latitude: 28.65, longitude: 77.23, label: "Old Delhi" },
+  { latitude: 28.545, longitude: 77.273, label: "Okhla" },
+  { latitude: 28.63, longitude: 77.11, label: "Janakpuri" },
+];
 
-export default function PotholeMap() {
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
-  });
+export default function DelhiMapPage() {
+  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
-  return isLoaded ? (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={shastriNagar}
-      zoom={14} // Zoom level 14 provides a clear view of the neighborhood
-    >
-      {/* Hardcoded Red Marker */}
-      <Marker position={shastriNagar} title="Shastri Nagar Pothole" />
-    </GoogleMap>
-  ) : (
-    <div className="flex items-center justify-center h-[600px] bg-gray-100 rounded-xl">
-      <p className="text-gray-500 animate-pulse">Initializing Google Maps...</p>
+  return (
+    <div style={{ height: "100vh", width: "100%" }}>
+      <APIProvider apiKey={API_KEY}>
+        <Map
+          // Centered on New Delhi
+          defaultCenter={{ lat: 28.6139, lng: 77.209 }}
+          defaultZoom={11}
+          gestureHandling={"greedy"}
+          disableDefaultUI={false}
+        >
+          {locations.map((point, index) => (
+            <Marker
+              key={index}
+              position={{ lat: point.latitude, lng: point.longitude }}
+              title={point.label}
+            />
+          ))}
+        </Map>
+      </APIProvider>
     </div>
   );
 }
