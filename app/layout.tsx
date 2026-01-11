@@ -7,8 +7,8 @@ import Footer from "./components/Footer";
 const roboto = Roboto({ weight: "400", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Expense Tracker",
-  description: "Track your expenses and create a budget",
+  title: "Raahi",
+  description: "Pothole reporting and management system, dimesion estimation of potholes using AI, crack detection using DL models.",
 };
 
 export default function RootLayout({

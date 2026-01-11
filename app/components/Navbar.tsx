@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
+import logo from "./logo.png";
 /**
  * Navbar Component for Raahi Application
  *
@@ -79,20 +79,12 @@ function Navbar() {
             onClick={closeMobileMenu}
           >
             {/* Logo Icon */}
-            <div className="bg-white rounded-lg p-2 group-hover:scale-110 transition-transform duration-300">
-              <svg
-                className="w-6 h-6 text-blue-900"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                />
-              </svg>
+            <div className="bg-white rounded-lg p-1 group-hover:scale-110 transition-transform duration-300">
+              <img
+                src={logo.src}
+                alt="Logo"
+                className="h-10 w-10 object-contain"
+              />
             </div>
 
             {/* Brand Name with Tagline */}
@@ -100,7 +92,7 @@ function Navbar() {
               <span className="text-2xl font-bold tracking-wide">Raahi</span>
 
               {/* Tagline - Appears on hover (desktop only) */}
-              <span className="hidden md:block absolute top-full left-0 mt-1 text-xs text-blue-200 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <span className="hidden md:block absolute top-full left-0 mt-1 -translate-y-1 text-xs text-blue-200 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 Safer Roads, Smarter Reporting
               </span>
             </div>

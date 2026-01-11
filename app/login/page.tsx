@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSignIn } from "@clerk/nextjs";
+import PasswordInput from "@/app/components/PasswordInput";
 function LoginPage() {
   const { signIn, isLoaded, setActive } = useSignIn();
   const [selectedRole, setSelectedRole] = useState("civilian");
@@ -120,23 +121,14 @@ function LoginPage() {
               </div>
 
               {/* Password Field */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                  placeholder="Enter your password"
-                />
-              </div>
+              <PasswordInput
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Enter your password"
+                label="Password"
+              />
 
               {/* Forgot Password Link */}
               {/*<div className="text-right">

@@ -5,6 +5,7 @@ import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { setUserRole } from "@/utils/roles";
 import { handleRegistration } from "./actions";
+import PasswordInput from "@/app/components/PasswordInput";
 
 function SignUpPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -214,25 +215,16 @@ function SignUpPage() {
                 </div>
 
                 {/* Password Field */}
-                <div>
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      setPassword(e.target.value);
-                    }}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
-                    placeholder="Enter your password"
-                  />
-                </div>
+                <PasswordInput
+                  id="password"
+                  name="password"
+                  value={password}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setPassword(e.target.value);
+                  }}
+                  placeholder="Enter your password"
+                  label="Password"
+                />
 
                 {/* Login Button */}
                 <button
