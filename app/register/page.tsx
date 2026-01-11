@@ -63,10 +63,6 @@ function SignUpPage() {
         console.log("Status:", completeSignUp.status);
       }
       if (completeSignUp.status === "complete") {
-        // setActive returns a promise, use an arrow function inside .then()
-        // if (completeSignUp.createdUserId) {
-        //   await setUserRole(completeSignUp.createdUserId, emailAddress);
-        // }
         await setActive({ session: completeSignUp.createdSessionId });
         const is_Admin = emailAddress
           .trim()
@@ -79,7 +75,6 @@ function SignUpPage() {
     }
   };
 
-  // Handle the submission of the verification form
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 py-12 px-4">
       <div className="container mx-auto max-w-5xl">

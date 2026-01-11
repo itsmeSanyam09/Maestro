@@ -1,4 +1,3 @@
-// app/report-pothole/uploadCloudinary.ts
 "use server";
 import { v2 as cloudinary } from "cloudinary";
 
@@ -8,7 +7,6 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Helper to create a delay between retries
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function uploadToCloudinary(file: File, maxRetries = 3) {
@@ -35,7 +33,6 @@ export async function uploadToCloudinary(file: File, maxRetries = 3) {
             .end(buffer);
         })) as any;
 
-        // Success! Return the ID and URL
         return {
           success: true,
           imageId: result.public_id,
@@ -45,12 +42,9 @@ export async function uploadToCloudinary(file: File, maxRetries = 3) {
         lastError = error;
         console.warn(`Upload attempt ${attempt} failed. Retrying...`);
 
-        // Wait 1 second before retrying (exponential backoff could go here)
         if (attempt < maxRetries) await sleep(1000);
       }
     }
-
-    // If we reach here, all retries failed
     throw lastError;
   } catch (error: any) {
     console.error("Cloudinary error after retries:", error);

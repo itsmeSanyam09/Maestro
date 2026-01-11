@@ -5,6 +5,16 @@ import ExifReader from "exifreader";
 import { uploadToCloudinary } from "./uploadCloudinary";
 import { createPotholeReport, processPotholeAI } from "./actions";
 
+const base64ToFile = (base64: string, filename: string, mimeType: string) => {
+  const byteString = atob(base64);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new File([ab], filename, { type: mimeType });
+};
+
 function ReportPotholeUpload() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -137,23 +147,22 @@ function ReportPotholeUpload() {
 
       const aiResponse = await processPotholeAI(aiFormData);
 
-      let allFilesToUpload = [...uploadedFiles.map((f) => f.file)];
+      let filesForCloudinary = uploadedFiles.map((f) => f.file);
 
       // 2. APPEND IMAGE RETURNED FROM MODEL (if applicable)
       if (aiResponse.success && aiResponse.processedImage) {
-        const processedFile = await urlToFile(
-          `data:image/png;base64,${aiResponse.processedImage}`,
-          "ai_analyzed_pothole.png",
+        const aiFile = base64ToFile(
+          aiResponse.processedImage,
+          "processed_pothole.png",
           "image/png"
         );
-        allFilesToUpload.push(processedFile);
+        filesForCloudinary.push(aiFile);
       }
 
       // 3. UPLOAD ALL TO CLOUDINARY
-      const uploadPromises = allFilesToUpload.map((file) =>
+      const uploadPromises = filesForCloudinary.map((file) =>
         uploadToCloudinary(file)
       );
-
       const uploadResults = await Promise.all(uploadPromises);
       const imageUrls = uploadResults
         .filter((result: any) => result.success)
@@ -170,6 +179,7 @@ function ReportPotholeUpload() {
       };
 
       await createPotholeReport(finalReport);
+      console.log(finalReport);
 
       setIsSubmitting(false);
       setShowSuccessModal(true);

@@ -2,7 +2,6 @@
 
 import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
-// Coordinates randomized within the Delhi NCR region
 const locations = [
   { latitude: 28.6139, longitude: 77.209, label: "Connaught Place" },
   { latitude: 28.5244, longitude: 77.1855, label: "Mehrauli" },
@@ -12,7 +11,6 @@ const locations = [
 ];
 
 export default function DelhiMapPage() {
-  // Ensure your API Key is in your .env.local file
   const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
   return (

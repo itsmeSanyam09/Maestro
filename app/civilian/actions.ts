@@ -3,7 +3,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../lib/lib";
 
-// Helper function for exponential backoff retry
 async function withRetry(fn: any, retries = 3, delay = 500) {
   try {
     return await fn();
@@ -16,10 +15,8 @@ async function withRetry(fn: any, retries = 3, delay = 500) {
       } attempts left)`
     );
 
-    // Wait for the delay
     await new Promise((resolve) => setTimeout(resolve, delay));
 
-    // Recursive call with reduced retry count and doubled delay
     return withRetry(fn, retries - 1, delay * 2);
   }
 }
