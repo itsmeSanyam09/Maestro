@@ -177,7 +177,7 @@ function ReportPotholeUpload() {
         .map((result: any) => result.url);
 
       console.log("coordinates:", coordinates);
-      // 4. SAVE TO PRISMA
+      // 4. SAVE TO PRISMA with AI dimensions
       const finalReport = {
         address: formData.location,
         lat: coordinates.lat || null,
@@ -185,9 +185,19 @@ function ReportPotholeUpload() {
         description: formData.description,
         severity: formData.severity,
         images: imageUrls,
+        // Pass AI dimensions if analysis was done
+        aiDimensions: analysisData ? {
+          length_cm: analysisData.dimensions.length_cm,
+          width_cm: analysisData.dimensions.width_cm,
+          depth_cm: analysisData.dimensions.depth_cm,
+          severity: analysisData.severity,
+          reasoning: analysisData.reasoning,
+        } : undefined,
       };
 
-      await createPotholeReport(finalReport);
+      console.log("Final report to submit:", finalReport);
+      const response = await createPotholeReport(finalReport);
+      console.log("Report submission response:", response);
 
       setIsSubmitting(false);
       setShowSuccessModal(true);

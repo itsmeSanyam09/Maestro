@@ -35,6 +35,9 @@ export async function getUserPosts() {
         where: {
           userId: clerkId,
         },
+        include: {
+          aiDimensions: true,
+        },
         orderBy: {
           createdAt: "desc",
         },

@@ -30,6 +30,7 @@ export async function fetchAllComplaints() {
       return await prisma.post.findMany({
         include: {
           user: true,
+          aiDimensions: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -39,7 +40,7 @@ export async function fetchAllComplaints() {
 
     return posts.map((post) => ({
       id: post.id,
-      reporterName: post.user.name,
+      reporterName: post.user?.name || "Anonymous",
       image:
         post.images[0] ||
         "https://images.unsplash.com/photo-1625228446534-d54ff2b1f6ab?w=400&h=300&fit=crop",
@@ -48,8 +49,11 @@ export async function fetchAllComplaints() {
       latitude: post.latitude,
       status: post.status || "pending",
       dateReported: post.createdAt.toISOString().split("T")[0],
-      severity: post.severity.charAt(0).toUpperCase() + post.severity.slice(1),
+      severity: post.severity && post.severity.length > 0 
+        ? post.severity.charAt(0).toUpperCase() + post.severity.slice(1).toLowerCase()
+        : "Medium",
       description: post.description || "No description provided",
+      aiDimensions: post.aiDimensions,
     }));
   } catch (error) {
     console.error("Database Error after retries:", error);
@@ -82,14 +86,17 @@ export async function getPostById(postId: string) {
     const post = await withRetry(async () => {
       const result = await prisma.post.findUnique({
         where: { id: postId },
-        include: { user: true },
+        include: { 
+          user: true,
+          aiDimensions: true,
+        },
       });
       if (!result) throw new Error("Post not found");
       return result;
     });
 
     // Randomization logic remains the same
-    return {
+    const response: any = {
       id: post.id,
       images: post.images || [],
       severity: post.severity,
@@ -130,6 +137,13 @@ export async function getPostById(postId: string) {
         Math.floor(Math.random() * 4) + 1
       } accidents in the past week. Urgent repair needed.`,
     };
+
+    // Add AI dimensions if available
+    if (post.aiDimensions) {
+      response.aiDimensions = post.aiDimensions;
+    }
+
+    return response;
   } catch (error) {
     console.error("Error fetching post after retries:", error);
     throw new Error("Failed to fetch post");

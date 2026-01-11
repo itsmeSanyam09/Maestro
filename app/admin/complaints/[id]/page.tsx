@@ -27,6 +27,13 @@ interface ComplaintDetail {
     width: number;
     depth: number;
   };
+  aiDimensions?: {
+    length_cm: string;
+    width_cm: string;
+    depth_cm: string;
+    severity: string;
+    reasoning: string | null;
+  };
   estimatedCost: number;
   assignedTeam: string;
   estimatedCompletionDate: string;
@@ -125,10 +132,11 @@ function CivilianComplaintDetail() {
   };
 
   const calculateVolume = () => {
+    if(!complaint.aiDimensions) return "50000";
     const volume =
-      complaint.dimensions.length *
-      complaint.dimensions.width *
-      complaint.dimensions.depth;
+      parseFloat(complaint.aiDimensions.length_cm) *
+      parseFloat(complaint.aiDimensions.width_cm) *
+      parseFloat(complaint.aiDimensions.depth_cm);
     return volume.toFixed(2);
   };
 
@@ -529,29 +537,38 @@ function CivilianComplaintDetail() {
               <div className="grid grid-cols-3 gap-3 mb-4">
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-blue-900">
-                    {complaint.dimensions.length}
+                    {complaint.aiDimensions?.length_cm || complaint.dimensions.length}
                   </div>
                   <div className="text-sm text-blue-700 font-medium mt-1">
-                    Length (m)
+                    Length ({complaint.aiDimensions ? 'cm' : 'm'})
                   </div>
                 </div>
                 <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-green-900">
-                    {complaint.dimensions.width}
+                    {complaint.aiDimensions?.width_cm || complaint.dimensions.width}
                   </div>
                   <div className="text-sm text-green-700 font-medium mt-1">
-                    Width (m)
+                    Width ({complaint.aiDimensions ? 'cm' : 'm'})
                   </div>
                 </div>
                 <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 text-center">
                   <div className="text-3xl font-bold text-orange-900">
-                    {complaint.dimensions.depth}
+                    {complaint.aiDimensions?.depth_cm || complaint.dimensions.depth}
                   </div>
                   <div className="text-sm text-orange-700 font-medium mt-1">
-                    Depth (m)
+                    Depth ({complaint.aiDimensions ? 'cm' : 'm'})
                   </div>
                 </div>
               </div>
+
+              {complaint.aiDimensions?.reasoning && (
+                <div className="bg-indigo-50 border-2 border-indigo-200 rounded-lg p-4 mb-4">
+                  <div className="text-indigo-700 font-semibold mb-2">AI Analysis Notes:</div>
+                  <div className="text-indigo-600 text-sm italic">
+                    "{complaint.aiDimensions.reasoning}"
+                  </div>
+                </div>
+              )}
 
               <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 mb-4">
                 <div className="flex justify-between items-center">
@@ -559,7 +576,7 @@ function CivilianComplaintDetail() {
                     Estimated Volume:
                   </span>
                   <span className="text-2xl font-bold text-purple-900">
-                    {calculateVolume()} m³
+                    {calculateVolume()} cm³
                   </span>
                 </div>
               </div>

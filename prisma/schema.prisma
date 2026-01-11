@@ -25,8 +25,21 @@ model Post {
   images      String[]
   dimension   String[] @default(["20", "6"])
   severity    String   @default("medium")
+  aiDescription String?
+  aiDimensions  AIDimensions?
   createdAt   DateTime @default(now())
-  userId      String
+  userId      String?
   status      String   @default("pending")
-  user        User     @relation(fields: [userId], references: [clerkUserId], onDelete: Cascade)
+  user        User?    @relation(fields: [userId], references: [clerkUserId], onDelete: Cascade)
+}
+
+model AIDimensions {
+  id         String   @id @default(cuid())
+  length_cm  String
+  width_cm   String
+  depth_cm   String
+  severity   String
+  reasoning  String?
+  postId     String   @unique
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 }

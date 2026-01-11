@@ -60,42 +60,75 @@ export async function createPotholeReport(
     description: string;
     severity: string;
     images: string[];
+    aiDimensions?: {
+      length_cm: string;
+      width_cm: string;
+      depth_cm: string;
+      severity: string;
+      reasoning?: string;
+    };
   },
   maxRetries = 3
 ) {
   try {
-    const { userId: clerkId } = await auth();
-
-    if (!clerkId) {
-      return {
-        success: false,
-        error: "You must be logged in to report a pothole.",
-      };
+    // Get userId if user is logged in, otherwise use null for anonymous submission
+    let clerkId: string | null = null;
+    try {
+      const session = await auth();
+      clerkId = session?.userId || null;
+    } catch (e) {
+      // User not logged in - this is okay, allow anonymous submission
+      clerkId = null;
     }
+    
+    console.log("Creating report for user:", clerkId || "anonymous");
+    console.log("Form data:", formData);
 
     let lastError;
 
     // Retry Loop
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+        const postData: any = {
+          description: formData.description,
+          address: formData.address,
+          images: formData.images,
+          longitude: formData?.lng,
+          latitude: formData?.lat,
+          severity: formData.severity,
+          dimension: ["0", "0"], // Default dimensions
+        };
+
+        // Add userId only if user is logged in
+        if (clerkId) {
+          postData.userId = clerkId;
+        }
+
+        // Add AI dimensions only if provided
+        if (formData.aiDimensions) {
+          postData.aiDimensions = {
+            create: {
+              length_cm: formData.aiDimensions.length_cm,
+              width_cm: formData.aiDimensions.width_cm,
+              depth_cm: formData.aiDimensions.depth_cm,
+              severity: formData.aiDimensions.severity,
+              reasoning: formData.aiDimensions.reasoning || null,
+            },
+          };
+        }
+
         const newPost = await prisma.post.create({
-          data: {
-            description: formData.description,
-            address: formData.address,
-            images: formData.images,
-            userId: clerkId,
-            longitude: formData?.lng,
-            latitude: formData?.lat,
-            severity: formData.severity,
-            dimension: [
-              String((Math.random() * (5 - 0.5) + 0.5).toFixed(2)),
-              String((Math.random() * (5 - 0.5) + 0.5).toFixed(2)),
-            ],
-          },
+          data: postData,
+          include: formData.aiDimensions ? {
+            aiDimensions: true,
+          } : undefined,
         });
+
+        console.log("Post created successfully:", newPost);
 
         // If successful, revalidate and return immediately
         revalidatePath("/civilian");
+        revalidatePath("/admin");
         return { success: true, data: newPost };
       } catch (error) {
         lastError = error;

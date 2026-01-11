@@ -14,6 +14,15 @@ interface Complaint {
   severity: string;
   dateReported: string;
   description: string | null;
+  aiDimensions: {
+    id: string;
+    length_cm: string;
+    width_cm: string;
+    depth_cm: string;
+    severity: string;
+    reasoning: string | null;
+    postId: string;
+  } | null;
 }
 
 function AdminDashboard() {
@@ -75,11 +84,13 @@ function AdminDashboard() {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const result = await fetchAllComplaints();
-      if (result.length > 0) {
-        setComplaints(result);
+      try {
+        const result = await fetchAllComplaints();
+        console.log("Fetched complaints:", result);
+        setComplaints(result && result.length > 0 ? result : complaints);
+      } catch (error) {
+        console.error("Error fetching complaints:", error);
       }
-      console.log(result);
     };
     fetchPosts();
   }, []);
@@ -410,6 +421,31 @@ function AdminDashboard() {
                         )}
                       </span>
                     </div>
+
+                    {complaint.aiDimensions && (
+                      <div className="bg-indigo-50 border border-indigo-200 rounded p-3 mt-3">
+                        <div className="text-xs font-semibold text-indigo-900 mb-2">AI Measurements:</div>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <div className="text-xs text-indigo-600">Length</div>
+                            <div className="font-mono text-sm font-bold text-indigo-900">{complaint.aiDimensions.length_cm} cm</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-indigo-600">Width</div>
+                            <div className="font-mono text-sm font-bold text-indigo-900">{complaint.aiDimensions.width_cm} cm</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-indigo-600">Depth</div>
+                            <div className="font-mono text-sm font-bold text-indigo-900">{complaint.aiDimensions.depth_cm} cm</div>
+                          </div>
+                        </div>
+                        {complaint.aiDimensions.reasoning && (
+                          <p className="text-xs text-indigo-700 italic mt-2 border-t border-indigo-200 pt-2">
+                            "{complaint.aiDimensions.reasoning}"
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -457,6 +493,9 @@ function AdminDashboard() {
                       Location
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                      Dimensions
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                       Priority
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -494,6 +533,23 @@ function AdminDashboard() {
                         <div className="text-sm text-gray-900 max-w-xs">
                           {complaint.location}
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {complaint.aiDimensions ? (
+                          <div className="text-xs space-y-1">
+                            <div className="font-mono font-semibold text-indigo-900">
+                              L: {complaint.aiDimensions.length_cm}
+                            </div>
+                            <div className="font-mono font-semibold text-indigo-900">
+                              W: {complaint.aiDimensions.width_cm}
+                            </div>
+                            <div className="font-mono font-semibold text-indigo-900">
+                              D: {complaint.aiDimensions.depth_cm}
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span

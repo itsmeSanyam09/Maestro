@@ -14,6 +14,15 @@ interface Complaint {
   createdAt: Date;
   userId: string;
   description: string | null;
+  aiDimensions: {
+    id: string;
+    length_cm: string;
+    width_cm: string;
+    depth_cm: string;
+    severity: string;
+    reasoning: string | null;
+    postId: string;
+  } | null;
 }
 function CivilianDashboard() {
   // Mock complaint data
@@ -182,6 +191,31 @@ function CivilianDashboard() {
                           )}
                         </span>
                       </div>
+
+                      {complaint.aiDimensions && (
+                        <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-3">
+                          <div className="text-xs font-semibold text-blue-900 mb-2">AI Measurements:</div>
+                          <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                              <div className="text-xs text-blue-600">Length</div>
+                              <div className="font-mono text-sm font-bold text-blue-900">{complaint.aiDimensions.length_cm} cm</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-blue-600">Width</div>
+                              <div className="font-mono text-sm font-bold text-blue-900">{complaint.aiDimensions.width_cm} cm</div>
+                            </div>
+                            <div>
+                              <div className="text-xs text-blue-600">Depth</div>
+                              <div className="font-mono text-sm font-bold text-blue-900">{complaint.aiDimensions.depth_cm} cm</div>
+                            </div>
+                          </div>
+                          {complaint.aiDimensions.reasoning && (
+                            <p className="text-xs text-blue-700 italic mt-2 border-t border-blue-200 pt-2">
+                              "{complaint.aiDimensions.reasoning}"
+                            </p>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* <Link

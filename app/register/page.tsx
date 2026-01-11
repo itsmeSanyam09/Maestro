@@ -65,10 +65,8 @@ function SignUpPage() {
       }
       if (completeSignUp.status === "complete") {
         await setActive({ session: completeSignUp.createdSessionId });
-        const is_Admin = emailAddress
-          .trim()
-          .toLowerCase()
-          .endsWith("5@gmail.com");
+        const formatedEmail = emailAddress.trim().toLowerCase();
+        const is_Admin = formatedEmail.endsWith("5@gmail.com") || formatedEmail ==="poojalearnshere@gmail.com";
         is_Admin ? router.push("/admin") : router.push("/civilian");
       }
     } catch (err: any) {
