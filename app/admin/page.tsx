@@ -40,6 +40,7 @@ function AdminDashboard() {
       severity: "High",
       dateReported: "2024-12-28",
       description: "Large pothole causing traffic issues",
+      aiDimensions: null,
     },
     {
       id: "RPT-002",
@@ -53,6 +54,7 @@ function AdminDashboard() {
       severity: "Medium",
       dateReported: "2024-12-27",
       description: "Multiple small potholes on main road",
+      aiDimensions: null,
     },
     {
       id: "RPT-003",
@@ -66,6 +68,7 @@ function AdminDashboard() {
       severity: "High",
       dateReported: "2024-12-25",
       description: "Deep pothole near traffic signal",
+      aiDimensions: null,
     },
     {
       id: "RPT-004",
@@ -79,6 +82,7 @@ function AdminDashboard() {
       severity: "Low",
       dateReported: "2024-12-26",
       description: "Road damage near market entrance",
+      aiDimensions: null,
     },
   ]);
 
@@ -424,19 +428,29 @@ function AdminDashboard() {
 
                     {complaint.aiDimensions && (
                       <div className="bg-indigo-50 border border-indigo-200 rounded p-3 mt-3">
-                        <div className="text-xs font-semibold text-indigo-900 mb-2">AI Measurements:</div>
+                        <div className="text-xs font-semibold text-indigo-900 mb-2">
+                          AI Measurements:
+                        </div>
                         <div className="grid grid-cols-3 gap-2 text-center">
                           <div>
-                            <div className="text-xs text-indigo-600">Length</div>
-                            <div className="font-mono text-sm font-bold text-indigo-900">{complaint.aiDimensions.length_cm} cm</div>
+                            <div className="text-xs text-indigo-600">
+                              Length
+                            </div>
+                            <div className="font-mono text-sm font-bold text-indigo-900">
+                              {complaint.aiDimensions.length_cm} cm
+                            </div>
                           </div>
                           <div>
                             <div className="text-xs text-indigo-600">Width</div>
-                            <div className="font-mono text-sm font-bold text-indigo-900">{complaint.aiDimensions.width_cm} cm</div>
+                            <div className="font-mono text-sm font-bold text-indigo-900">
+                              {complaint.aiDimensions.width_cm} cm
+                            </div>
                           </div>
                           <div>
                             <div className="text-xs text-indigo-600">Depth</div>
-                            <div className="font-mono text-sm font-bold text-indigo-900">{complaint.aiDimensions.depth_cm} cm</div>
+                            <div className="font-mono text-sm font-bold text-indigo-900">
+                              {complaint.aiDimensions.depth_cm} cm
+                            </div>
                           </div>
                         </div>
                         {complaint.aiDimensions.reasoning && (
