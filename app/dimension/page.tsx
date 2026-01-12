@@ -6,6 +6,7 @@ export default function PotholePage() {
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<any>(null);
+  // handling dimensions
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
